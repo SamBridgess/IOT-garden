@@ -1,0 +1,59 @@
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto
+    expose:
+      - 1883
+    ports:
+      - 1883:1883
+    volumes:
+      - ./mosquitto:/mosquitto/config
+  garden-1:
+    build: ./garden
+    command: "1 mqtt-broker"
+    depends_on:
+      - mqtt-broker
+  garden-2:
+    build: ./garden
+    command: "2 mqtt-broker"
+    depends_on:
+      - mqtt-broker
+  garden-3:
+    build: ./garden
+    command: "3 mqtt-broker"
+    depends_on:
+      - mqtt-broker
+  garden-4:
+    build: ./garden
+    command: "4 mqtt-broker"
+    depends_on:
+      - mqtt-broker
+  garden-5:
+    build: ./garden
+    command: "5 mqtt-broker"
+    depends_on:
+      - mqtt-broker
+  master:
+    build: ./Master
+    expose:
+      - 1488
+    ports:
+      - 1488:1488
+    depends_on:
+      - mqtt-broker
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/prometheus/prometheus.yml
+    command: "--config.file=/prometheus/prometheus.yml"
+  database:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql
